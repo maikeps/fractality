@@ -1,6 +1,6 @@
 #!/usr/bin/python
 
-import Tkinter
+import tkinter
 import re
 import sys
 
@@ -62,14 +62,13 @@ def crazy(hex_color, rect_number):
 
 
 
-def generate_fractal(regex, main_color, secondary_color, coloring_function=None):
-	master = Tkinter.Tk()
+def generate_fractal(regex, main_color, secondary_color, depth, coloring_function=None):
+	master = tkinter.Tk()
 
-	canvas = Tkinter.Canvas(width=800, height=800)
+	canvas = tkinter.Canvas(width=600, height=600)
 	canvas.pack()
 
-	rects = create_quadrants(0, 0, 800, 800, 8)
-	final_rects = []
+	rects = create_quadrants(0, 0, 600, 600, depth)
 
 	for rect in rects:
 		color = ''
@@ -98,17 +97,18 @@ def main():
 				return 0
 			main_color = find_arg('-p', sys.argv).upper()
 			secondary_color = find_arg('-s', sys.argv).upper()
-			if len(sys.argv) > 8:
+			coloring_function = ''
+			if find_arg('-f', sys.argv) is not None:
 				coloring_function = find_arg('-f', sys.argv).lower()
-				if coloring_function not in globals():
-					print("Function not found")
-					return 0
-			else:
-				coloring_function = None
-			generate_fractal(regex, main_color, secondary_color, coloring_function)
+			depth = 8
+			if find_arg('-d', sys.argv) is not None:
+				depth = int(find_arg('-d', sys.argv))
+			print(coloring_function)
+			generate_fractal(regex, main_color, secondary_color, depth, coloring_function)
 
 def find_arg(arg, argv):
-	return argv[argv.index(arg)+1]
+	if arg in argv:
+		return argv[argv.index(arg)+1]
 
 def regex_correct(regex):
 	return True
@@ -130,8 +130,9 @@ def print_help():
 	print("-r <arg>\tThe regular expression used to generate the fractal")
 	print("-f <arg>\tDefines the fractal coloring function (optional)")
 	print("-p <arg>\tThe primary color used on the coloring function")
-	print("-s <arg>\tThe secondary color used on the coloring function\n")
-	print("OBS:\nThe arguments don't need to be in order;\nAll arguments need to be in quotes.\n")
+	print("-s <arg>\tThe secondary color used on the coloring function")
+	print("-d <arg>\tThe detail depth of the fractal (optional)\n")
+	print("OBS:\nThe arguments don't need to be in order;\nAll non-integer arguments need to be in quotes;\nNote that the depth must be a number between 1 and 9, as it increases exponencially the amount of memory needed to generate the fractal.\n")
 
 	print(BOLD+"Coloring functions:"+END)
 	print("crazy\n")
