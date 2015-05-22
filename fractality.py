@@ -128,7 +128,7 @@ def print_help():
 
 	print(BOLD+"Usage:"+END)
 	print("-r <arg>\tThe regular expression used to generate the fractal")
-	print("-f <arg>\tDefines the fractal coloring function")
+	print("-f <arg>\tDefines the fractal coloring function (optional)")
 	print("-p <arg>\tThe primary color used on the coloring function")
 	print("-s <arg>\tThe secondary color used on the coloring function\n")
 	print("OBS:\nThe arguments don't need to be in order;\nAll arguments need to be in quotes.\n")
