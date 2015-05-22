@@ -6,10 +6,13 @@
 -f arg	Defines the fractal coloring function (optional)  
 -p arg	The primary color used on the coloring function  
 -s arg	The secondary color used on the coloring function  
+-d <arg>	The detail depth of the fractal (optional)  
 
 OBS:  
 The arguments don't need to be in order;  
-All arguments need to be in quotes.  
+All arguments need to be in quotes;  
+Note that the depth must be a number between 1 and 9, as it increases exponencially the amount of memory needed to generate the fractal.  
+
 
 ### Coloring functions:
 - crazy
