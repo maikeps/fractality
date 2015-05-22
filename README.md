@@ -2,10 +2,10 @@
 ###### Fractality is a fractal generator based on regular expression.
 
 ### Usage:
--r <arg>	The regular expression used to generate the fractal  
--f <arg>	Defines the fractal coloring function  
--p <arg>	The primary color used on the coloring function  
--s <arg>	The secondary color used on the coloring function  
+-r arg	The regular expression used to generate the fractal  
+-f arg	Defines the fractal coloring function (optional)  
+-p arg	The primary color used on the coloring function  
+-s arg	The secondary color used on the coloring function  
 
 OBS:  
 The arguments don't need to be in order;  
