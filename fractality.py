@@ -4,18 +4,10 @@ import tkinter
 import re
 import sys
 
-
-class Rect:
-	def __init__(self, x, y, x2, y2, name, father_name):
-		self.x = x
-		self.y = y
-		self.x2 = x2
-		self.y2 = y2
-		self.name = father_name + name
-
-	def coordinates(self):
-		return [(self.x, self.y), (self.x2, self.y2)]
-
+Rect = lambda x1, y1, x2, y2, name, father_name: {
+    'x': x1, 'y': y1, 'x2': x2, 'y2': y2, 'name': father_name + name,
+    'coordinates': ((x1, y1), (x2, y2))
+}
 
 def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height, depth, father_name=''):
 	# 2 | 1
@@ -36,7 +28,7 @@ def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height, 
 
 	if depth-1 > 0:
 		for rect in rects:
-			sub_rects = create_quadrants(rect.x, rect.y, rect.x2, rect.y2, depth-1, rect.name)
+			sub_rects = create_quadrants(rect['x'], rect['y'], rect['x2'], rect['y2'], depth-1, rect['name'])
 			for sub_rect in sub_rects:
 				final_rects.append(sub_rect)
 
@@ -72,16 +64,16 @@ def generate_fractal(regex, main_color, secondary_color, depth, coloring_functio
 
 	for rect in rects:
 		color = ''
-		if re.search(regex, rect.name):
+		if re.search(regex, rect['name']):
 			if coloring_function:
-				color = globals()[coloring_function](main_color, rect.name)
+				color = globals()[coloring_function](main_color, rect['name'])
 			else:
 				color = main_color
 		else:
 			color = secondary_color
-		canvas.create_rectangle(rect.x, rect.y, rect.x2, rect.y2, fill=color, outline=color)
+		canvas.create_rectangle(rect['x'], rect['y'], rect['x2'], rect['y2'], fill=color, outline=color)
 
-	master.mainloop()
+	#master.mainloop()
 
 def main():
 	if len(sys.argv) > 1:
