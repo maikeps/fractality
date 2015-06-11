@@ -4,9 +4,11 @@ import tkinter
 import re
 import sys
 
-rectangle = lambda x1, y1, x2, y2, name, father_name: {
-    'x': x1, 'y': y1, 'x2': x2, 'y2': y2, 'name': father_name + name
-}
+_x1, _y1, _x2, _y2, _name = range(5)
+
+
+def rectangle(x1, y1, x2, y2, name, father_name):
+    return (x1, y1, x2, y2, father_name + name)
 
 
 def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height,
@@ -31,8 +33,8 @@ def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height,
     final_rects = []
     for rect in rects:
         final_rects.extend(
-            create_quadrants(rect['x'], rect['y'], rect['x2'], rect['y2'],
-                             depth - 1, rect['name']))
+            create_quadrants(rect[_x1], rect[_y1], rect[_x2], rect[_y2],
+                             depth - 1, rect[_name]))
 
     return final_rects
 
@@ -55,8 +57,11 @@ def crazy(hex_color, rect_number):
 
 def generate_fractal(regex, main_color, secondary_color, depth,
                      coloring_function=None):
+    def noop(x, y):
+        return x
+
     if coloring_function is None:
-        coloring_function = lambda x, y: x
+        coloring_function = noop
     else:
         coloring_function = globals()[coloring_function]
     master = tkinter.Tk()
@@ -67,11 +72,12 @@ def generate_fractal(regex, main_color, secondary_color, depth,
     rects = create_quadrants(0, 0, 600, 600, depth)
 
     for rect in rects:
-        if regex.search(rect['name']) is not None:
-            color = coloring_function(main_color, rect['name'])
+        if regex.search(rect[_name]) is not None:
+            color = coloring_function(main_color, rect[_name])
         else:
             color = secondary_color
-        canvas.create_rectangle(rect['x'], rect['y'], rect['x2'], rect['y2'],
+
+        canvas.create_rectangle(rect[_x1], rect[_y1], rect[_x2], rect[_y2],
                                 fill=color, outline=color)
 
     master.mainloop()
