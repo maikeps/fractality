@@ -4,38 +4,37 @@ import tkinter
 import re
 import sys
 
-Rect = lambda x1, y1, x2, y2, name, father_name: {
-    'x': x1, 'y': y1, 'x2': x2, 'y2': y2, 'name': father_name + name,
-    'coordinates': ((x1, y1), (x2, y2))
+rectangle = lambda x1, y1, x2, y2, name, father_name: {
+    'x': x1, 'y': y1, 'x2': x2, 'y2': y2, 'name': father_name + name
 }
 
-def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height, depth, father_name=''):
-	# 2 | 1
-	# -----
-	# 3 | 4
 
-	x = canvas_startx
-	y = canvas_starty
+def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height,
+                     depth, father=''):
+    # 2 | 1
+    # -----
+    # 3 | 4
 
-	r1 = Rect(x+(canvas_width-x)/2, canvas_starty, canvas_width, y+(canvas_height-y)/2, '1', father_name)
-	r2 = Rect(canvas_startx, canvas_starty, x+(canvas_width-x)/2, y+(canvas_height-y)/2, '2', father_name)
-	r3 = Rect(canvas_startx, y+(canvas_height-y)/2, x+(canvas_width-x)/2, canvas_height, '3', father_name)
-	r4 = Rect(x+(canvas_width-x)/2, y+(canvas_height-y)/2, canvas_width, canvas_height, '4', father_name)
+    x0, y0, x, y = canvas_startx, canvas_starty, canvas_width, canvas_height
 
-	rects = [r1, r2, r3, r4]
+    rects = (
+        rectangle(x0 + (x - x0) >> 1, y0, x, y0 + (y - y0) >> 1, '1', father),
+        rectangle(x0, y0, x0 + (x - x0) >> 1, y0 + (y - y0) >> 1, '2', father),
+        rectangle(x0, y0 + (y - y0) >> 1, x0 + (x - x0) >> 1, y, '3', father),
+        rectangle(x0 + (x - x0) >> 1, y0 + (y - y0) >> 1, x, y, '4', father),
+    )
 
-	final_rects = []
+    if depth <= 1:
+        return rects
 
-	if depth-1 > 0:
-		for rect in rects:
-			sub_rects = create_quadrants(rect['x'], rect['y'], rect['x2'], rect['y2'], depth-1, rect['name'])
-			for sub_rect in sub_rects:
-				final_rects.append(sub_rect)
+    final_rects = []
+    for rect in rects:
+        final_rects.extend(
+            create_quadrants(rect['x'], rect['y'], rect['x2'], rect['y2'],
+                             depth - 1, rect['name']))
 
-	else:
-		return rects
+    return final_rects
 
-	return final_rects
 
 def crazy(hex_color, rect_number):
 	if hex_color[0] == '#':
