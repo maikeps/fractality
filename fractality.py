@@ -4,147 +4,103 @@ import tkinter
 import re
 import sys
 
-
-class Rect:
-	def __init__(self, x, y, x2, y2, name, father_name):
-		self.x = x
-		self.y = y
-		self.x2 = x2
-		self.y2 = y2
-		self.name = father_name + name
-
-	def coordinates(self):
-		return [(self.x, self.y), (self.x2, self.y2)]
+_x1, _y1, _x2, _y2, _name = range(5)
 
 
-def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height, depth, father_name=''):
-	# 2 | 1
-	# -----
-	# 3 | 4
+def rectangle(x1, y1, x2, y2, name, father_name):
+    return (x1, y1, x2, y2, father_name + name)
 
-	x = canvas_startx
-	y = canvas_starty
 
-	r1 = Rect(x+(canvas_width-x)/2, canvas_starty, canvas_width, y+(canvas_height-y)/2, '1', father_name)
-	r2 = Rect(canvas_startx, canvas_starty, x+(canvas_width-x)/2, y+(canvas_height-y)/2, '2', father_name)
-	r3 = Rect(canvas_startx, y+(canvas_height-y)/2, x+(canvas_width-x)/2, canvas_height, '3', father_name)
-	r4 = Rect(x+(canvas_width-x)/2, y+(canvas_height-y)/2, canvas_width, canvas_height, '4', father_name)
+def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height,
+                     depth, father=''):
+    # 2 | 1
+    # -----
+    # 3 | 4
 
-	rects = [r1, r2, r3, r4]
+    x0, y0, x, y = canvas_startx, canvas_starty, canvas_width, canvas_height
+    delta_x, delta_y = x - x0 >> 1, y - y0 >> 1
 
-	final_rects = []
+    rects = (
+        rectangle(x0 + delta_x, y0, x, y0 + delta_y, '1', father),
+        rectangle(x0, y0, x0 + delta_x, y0 + delta_y, '2', father),
+        rectangle(x0, y0 + delta_y, x0 + delta_x, y, '3', father),
+        rectangle(x0 + delta_x, y0 + delta_y, x, y, '4', father),
+    )
 
-	if depth-1 > 0:
-		for rect in rects:
-			sub_rects = create_quadrants(rect.x, rect.y, rect.x2, rect.y2, depth-1, rect.name)
-			for sub_rect in sub_rects:
-				final_rects.append(sub_rect)
+    if depth <= 1:
+        return rects
 
-	else:
-		return rects
+    final_rects = []
+    for rect in rects:
+        final_rects.extend(
+            create_quadrants(rect[_x1], rect[_y1], rect[_x2], rect[_y2],
+                             depth - 1, rect[_name]))
 
-	return final_rects
+    return final_rects
+
 
 def crazy(hex_color, rect_number):
-	if hex_color[0] == '#':
-		hex_color = '0x'+hex_color[1::]
-	number = int(hex_color, 16)
-	final_hex = hex(number*int(rect_number))[2::]
-	if len(final_hex) > 6:
-		final_hex = final_hex[len(final_hex)-6::]
-	if len(final_hex) < 6:
-		aux = ''
-		for i in range(len(final_hex) - 6):
-			aux += '0'
-		final_hex = aux + final_hex
+    if hex_color[0] == '#':
+        hex_color = '0x' + hex_color[1::]
+    number = int(hex_color, 16)
+    final_hex = hex(number * int(rect_number))[2::]
+    if len(final_hex) > 6:
+        final_hex = final_hex[len(final_hex) - 6::]
+    if len(final_hex) < 6:
+        aux = ''
+        for i in range(len(final_hex) - 6):
+            aux += '0'
+        final_hex = aux + final_hex
 
-	return "#"+final_hex
+    return "#" + final_hex
 
 
+def generate_fractal(regex, main_color, secondary_color, depth,
+                     coloring_function=None):
+    def noop(x, y):
+        return x
 
-def generate_fractal(regex, main_color, secondary_color, depth, coloring_function=None):
-	master = tkinter.Tk()
+    if coloring_function is None:
+        coloring_function = noop
+    else:
+        coloring_function = globals()[coloring_function]
+    master = tkinter.Tk()
 
-	canvas = tkinter.Canvas(width=600, height=600)
-	canvas.pack()
+    canvas = tkinter.Canvas(width=600, height=600)
+    canvas.pack()
 
-	rects = create_quadrants(0, 0, 600, 600, depth)
+    rects = create_quadrants(0, 0, 600, 600, depth)
 
-	for rect in rects:
-		color = ''
-		if re.search(regex, rect.name):
-			if coloring_function:
-				color = globals()[coloring_function](main_color, rect.name)
-			else:
-				color = main_color
-		else:
-			color = secondary_color
-		canvas.create_rectangle(rect.x, rect.y, rect.x2, rect.y2, fill=color, outline=color)
+    for rect in rects:
+        if regex.search(rect[_name]) is not None:
+            color = coloring_function(main_color, rect[_name])
+        else:
+            color = secondary_color
 
-	master.mainloop()
+        canvas.create_rectangle(rect[_x1], rect[_y1], rect[_x2], rect[_y2],
+                                fill=color, outline=color)
+
+    master.mainloop()
+
 
 def main():
-	if len(sys.argv) > 1:
-		if sys.argv[1] == '--help' or sys.argv[1] == '-h':
-			print_help()
-		else:
-			if not arguments_correct(sys.argv):
-				print("Arguments incorrect")
-				return 0
-			regex = find_arg('-r', sys.argv)
-			if not regex_correct(regex):
-				print("Regular Expression malformed")
-				return 0
-			main_color = find_arg('-p', sys.argv).upper()
-			secondary_color = find_arg('-s', sys.argv).upper()
-			coloring_function = ''
-			if find_arg('-f', sys.argv) is not None:
-				coloring_function = find_arg('-f', sys.argv).lower()
-			depth = 8
-			if find_arg('-d', sys.argv) is not None:
-				depth = int(find_arg('-d', sys.argv))
-			print(coloring_function)
-			generate_fractal(regex, main_color, secondary_color, depth, coloring_function)
+    import argparse
 
-def find_arg(arg, argv):
-	if arg in argv:
-		return argv[argv.index(arg)+1]
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--regex', '-r', type=re.compile,
+                        help='The regular expression used to generate the fractal')
+    parser.add_argument('--colors', '-c', nargs=2,
+                        help='The colors used on the coloring function')
+    parser.add_argument('--function', '-f', nargs='?',
+                        help='Defines the fractal coloring function (optional)')
+    parser.add_argument('--depth', '-d', type=int, nargs='?', default=8,
+                        help='The detail depth of the fractal (optional)')
 
-def regex_correct(regex):
-	return True
+    args = parser.parse_args()
+    generate_fractal(regex=args.regex, main_color=args.colors[0],
+                     secondary_color=args.colors[1], depth=args.depth,
+                     coloring_function=args.function)
 
-def arguments_correct(argv):
-	if len(argv) < 6:
-		return False
-	return True
-
-def print_help():
-	BOLD = '\033[1m'
-	END = '\033[0m'
-
-	print("\n")
-	print(BOLD+"Fractality - Regex Fractal Generator:"+END)
-	print("Fractality is a fractal generator based on regular expression.\n")
-
-	print(BOLD+"Usage:"+END)
-	print("-r <arg>\tThe regular expression used to generate the fractal")
-	print("-f <arg>\tDefines the fractal coloring function (optional)")
-	print("-p <arg>\tThe primary color used on the coloring function")
-	print("-s <arg>\tThe secondary color used on the coloring function")
-	print("-d <arg>\tThe detail depth of the fractal (optional)\n")
-	print("OBS:\nThe arguments don't need to be in order;\nAll non-integer arguments need to be in quotes;\nNote that the depth must be a number between 1 and 9, as it increases exponencially the amount of memory needed to generate the fractal.\n")
-
-	print(BOLD+"Coloring functions:"+END)
-	print("crazy\n")
-
-	print(BOLD+"Regular Expresison examples:"+END)
-	print("(23|41|34|12)")
-	print("(13|31|24|42)")
-	print("(13|31)")
-	print("(1)\n\n")
-
-	print("Made by Maike de Paula Santos")
-	print("Inspired by ssodelta: http://ssodelta.wordpress.com")
 
 if __name__ == '__main__':
-	main()
+    main()
