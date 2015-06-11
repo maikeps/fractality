@@ -63,8 +63,7 @@ def generate_fractal(regex, main_color, secondary_color, depth,
     rects = create_quadrants(0, 0, 600, 600, depth)
 
     for rect in rects:
-        color = ''
-        if re.search(regex, rect['name']):
+        if regex.search(rect['name']) is not None:
             if coloring_function:
                 color = globals()[coloring_function](main_color, rect['name'])
             else:
@@ -78,73 +77,22 @@ def generate_fractal(regex, main_color, secondary_color, depth,
 
 
 def main():
-    if len(sys.argv) > 1:
-        if sys.argv[1] == '--help' or sys.argv[1] == '-h':
-            print_help()
-        else:
-            if not arguments_correct(sys.argv):
-                print("Arguments incorrect")
-                return 0
-            regex = find_arg('-r', sys.argv)
-            if not regex_correct(regex):
-                print("Regular Expression malformed")
-                return 0
-            main_color = find_arg('-p', sys.argv).upper()
-            secondary_color = find_arg('-s', sys.argv).upper()
-            coloring_function = ''
-            if find_arg('-f', sys.argv) is not None:
-                coloring_function = find_arg('-f', sys.argv).lower()
-            depth = 8
-            if find_arg('-d', sys.argv) is not None:
-                depth = int(find_arg('-d', sys.argv))
-            print(coloring_function)
-            generate_fractal(regex, main_color, secondary_color, depth,
-                             coloring_function)
+    import argparse
 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--regex', '-r', type=re.compile,
+                        help='The regular expression used to generate the fractal')
+    parser.add_argument('--colors', '-c', nargs=2,
+                        help='The colors used on the coloring function')
+    parser.add_argument('--function', '-f', nargs='?',
+                        help='Defines the fractal coloring function (optional)')
+    parser.add_argument('--depth', '-d', type=int, nargs='?', default=8,
+                        help='The detail depth of the fractal (optional)')
 
-def find_arg(arg, argv):
-    if arg in argv:
-        return argv[argv.index(arg) + 1]
-
-
-def regex_correct(regex):
-    return True
-
-
-def arguments_correct(argv):
-    if len(argv) < 6:
-        return False
-    return True
-
-
-def print_help():
-    BOLD = '\033[1m'
-    END = '\033[0m'
-
-    print("\n")
-    print(BOLD + "Fractality - Regex Fractal Generator:" + END)
-    print("Fractality is a fractal generator based on regular expression.\n")
-
-    print(BOLD + "Usage:" + END)
-    print("-r <arg>\tThe regular expression used to generate the fractal")
-    print("-f <arg>\tDefines the fractal coloring function (optional)")
-    print("-p <arg>\tThe primary color used on the coloring function")
-    print("-s <arg>\tThe secondary color used on the coloring function")
-    print("-d <arg>\tThe detail depth of the fractal (optional)\n")
-    print(
-        "OBS:\nThe arguments don't need to be in order;\nAll non-integer arguments need to be in quotes;\nNote that the depth must be a number between 1 and 9, as it increases exponencially the amount of memory needed to generate the fractal.\n")
-
-    print(BOLD + "Coloring functions:" + END)
-    print("crazy\n")
-
-    print(BOLD + "Regular Expresison examples:" + END)
-    print("(23|41|34|12)")
-    print("(13|31|24|42)")
-    print("(13|31)")
-    print("(1)\n\n")
-
-    print("Made by Maike de Paula Santos")
-    print("Inspired by ssodelta: http://ssodelta.wordpress.com")
+    args = parser.parse_args()
+    generate_fractal(regex=args.regex, main_color=args.colors[0],
+                     secondary_color=args.colors[1], depth=args.depth,
+                     coloring_function=args.function)
 
 
 if __name__ == '__main__':
