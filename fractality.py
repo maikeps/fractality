@@ -1,6 +1,10 @@
 #!/usr/bin/python
 
-import tkinter
+try:
+    import tkinter
+except ImportError:
+    import Tkinter
+    
 import re
 import sys
 
@@ -64,9 +68,14 @@ def generate_fractal(regex, main_color, secondary_color, depth,
         coloring_function = noop
     else:
         coloring_function = globals()[coloring_function]
-    master = tkinter.Tk()
-
-    canvas = tkinter.Canvas(width=600, height=600)
+        
+    try:
+        master = tkinter.Tk()
+        canvas = tkinter.Canvas(width=600, height=600)
+    except NameError:
+	    master = Tkinter.Tk()
+        canvas = Tkinter.Canvas(width=600, height=600)
+ 
     canvas.pack()
 
     rects = create_quadrants(0, 0, 600, 600, depth)
