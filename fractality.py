@@ -73,7 +73,7 @@ def generate_fractal(regex, main_color, secondary_color, depth,
         master = tkinter.Tk()
         canvas = tkinter.Canvas(width=600, height=600)
     except NameError:
-	    master = Tkinter.Tk()
+        master = Tkinter.Tk()
         canvas = Tkinter.Canvas(width=600, height=600)
  
     canvas.pack()
