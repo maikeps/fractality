@@ -55,6 +55,10 @@ def crazy(hex_color, rect_number):
 
 def generate_fractal(regex, main_color, secondary_color, depth,
                      coloring_function=None):
+    if coloring_function is None:
+        coloring_function = lambda x, y: x
+    else:
+        coloring_function = globals()[coloring_function]
     master = tkinter.Tk()
 
     canvas = tkinter.Canvas(width=600, height=600)
@@ -64,10 +68,7 @@ def generate_fractal(regex, main_color, secondary_color, depth,
 
     for rect in rects:
         if regex.search(rect['name']) is not None:
-            if coloring_function:
-                color = globals()[coloring_function](main_color, rect['name'])
-            else:
-                color = main_color
+            color = coloring_function(main_color, rect['name'])
         else:
             color = secondary_color
         canvas.create_rectangle(rect['x'], rect['y'], rect['x2'], rect['y2'],
