@@ -16,12 +16,13 @@ def create_quadrants(canvas_startx, canvas_starty, canvas_width, canvas_height,
     # 3 | 4
 
     x0, y0, x, y = canvas_startx, canvas_starty, canvas_width, canvas_height
+    delta_x, delta_y = x - x0 >> 1, y - y0 >> 1
 
     rects = (
-        rectangle(x0 + (x - x0) >> 1, y0, x, y0 + (y - y0) >> 1, '1', father),
-        rectangle(x0, y0, x0 + (x - x0) >> 1, y0 + (y - y0) >> 1, '2', father),
-        rectangle(x0, y0 + (y - y0) >> 1, x0 + (x - x0) >> 1, y, '3', father),
-        rectangle(x0 + (x - x0) >> 1, y0 + (y - y0) >> 1, x, y, '4', father),
+        rectangle(x0 + delta_x, y0, x, y0 + delta_y, '1', father),
+        rectangle(x0, y0, x0 + delta_x, y0 + delta_y, '2', father),
+        rectangle(x0, y0 + delta_y, x0 + delta_x, y, '3', father),
+        rectangle(x0 + delta_x, y0 + delta_y, x, y, '4', father),
     )
 
     if depth <= 1:
